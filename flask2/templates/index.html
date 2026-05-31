@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="upload-form">
+    <h2> Загрузить файл</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.file.label }}<br>
+            {{ form.file() }}
+            {% for error in form.file.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit(class="btn") }}</p>
+    </form>
+    <p><small>Разрешённые форматы: jpg, jpeg, png, gif, pdf, txt, doc, docx, mp3, mp4</small></p>
+    <p><small> Запрещены: exe, sh, php, js, bat, cmd, py, pl, cgi</small></p>
+</div>
+
+<h2> Список загруженных файлов</h2>
+
+{% if files %}
+<table class="file-list">
+    <thead>
+        <tr>
+            <th>Оригинальное имя</th>
+            <th>UUID имя</th>
+            <th>Путь на сервере</th>
+            <th>Расширение</th>
+            <th>Дата загрузки</th>
+            <th>Размер (байт)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for file in files|reverse %}
+        <tr>
+            <td>{{ file.original_name }}</td>
+            <td><a href="/uploads/{{ file.path.replace('upload/', '') }}">{{ file.uuid_name }}</a></td>
+            <td><code>{{ file.path }}</code></td>
+            <td>{{ file.extension }}</td>
+            <td>{{ file.upload_date }}</td>
+            <td>{{ file.size }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Пока нет загруженных файлов. Загрузите первый файл!</p>
+{% endif %}
+
+{% endblock %}
