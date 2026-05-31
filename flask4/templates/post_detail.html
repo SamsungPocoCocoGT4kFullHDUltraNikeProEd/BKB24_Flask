@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+                <li class="breadcrumb-item active">{{ post.title }}</li>
+            </ol>
+        </nav>
+        
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">{{ post.title }}</h1>
+                
+                <div class="text-muted mb-4">
+                    <p>
+                        <i class="fas fa-user"></i> <strong>{{ post.author.username }}</strong><br>
+                        <i class="fas fa-calendar"></i> Создан: {{ post.created_at.strftime('%d.%m.%Y %H:%M') }}<br>
+                        {% if post.updated_at != post.created_at %}
+                            <i class="fas fa-edit"></i> Обновлен: {{ post.updated_at.strftime('%d.%m.%Y %H:%M') }}<br>
+                        {% endif %}
+                        <i class="fas fa-folder"></i> Категория: 
+                        <a href="{{ url_for('index', category=post.category_id) }}" class="text-decoration-none">
+                            {{ post.category.name if post.category else 'Без категории' }}
+                        </a>
+                    </p>
+                </div>
+                
+                <div class="post-content mb-4" style="font-size: 1.1em; line-height: 1.8;">
+                    {{ post.content|replace('\n', '<br>')|safe }}
+                </div>
+                
+                <div class="mb-4">
+                    <strong><i class="fas fa-tags"></i> Теги:</strong><br>
+                    {% for tag in post.tags %}
+                        <a href="{{ url_for('index', tag=tag.id) }}" class="tag text-decoration-none">
+                            <i class="fas fa-tag"></i> {{ tag.name }}
+                        </a>
+                    {% else %}
+                        <span class="text-muted">Нет тегов</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-4">
+                    {% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.is_admin) %}
+                        <a href="{{ url_for('posts.edit_post', post_id=post.id) }}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </a>
+                        <a href="{{ url_for('posts.delete_post', post_id=post.id) }}" class="btn btn-danger"
+                           onclick="return confirm('Вы уверены?')">
+                            <i class="fas fa-trash"></i> Удалить
+                        </a>
+                        <a href="{{ url_for('posts.toggle_private', post_id=post.id) }}" class="btn btn-info">
+                            {% if post.is_private %}
+                                <i class="fas fa-globe"></i> Сделать публичным
+                            {% else %}
+                                <i class="fas fa-lock"></i> Сделать приватным
+                            {% endif %}
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

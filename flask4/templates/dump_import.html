@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Импорт дампа{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-upload"></i> Импорт дампа постов</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.file.label(class="form-label") }}
+                        {{ form.file(class="form-control") }}
+                        <small class="text-muted">Загрузите JSON файл, экспортированный из системы</small>
+                        {% for error in form.file.errors %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.overwrite(class="form-check-input") }}
+                        {{ form.overwrite.label(class="form-check-label") }}
+                        <small class="text-muted d-block">Если включено, существующие посты будут перезаписаны</small>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.create_missing(class="form-check-input") }}
+                        {{ form.create_missing.label(class="form-check-label") }}
+                        <small class="text-muted d-block">Автоматически создавать недостающие категории, теги и авторов</small>
+                    </div>
+                    
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
+                </form>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i> Формат JSON должен соответствовать экспортированному дампу
+                </small>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-download"></i> Экспорт дампа</h5>
+            </div>
+            <div class="card-body">
+                <p>Экспортировать все посты в JSON файл:</p>
+                <a href="{{ url_for('export_dump') }}" class="btn btn-success">
+                    <i class="fas fa-download"></i> Скачать дамп
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
