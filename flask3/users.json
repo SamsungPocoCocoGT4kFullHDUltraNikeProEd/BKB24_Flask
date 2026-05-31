@@ -1,0 +1,24 @@
+[
+    {
+        "id": 1,
+        "username": "admin",
+        "first_name": "Admin",
+        "last_name": "Adminov",
+        "email": "admin@example.com",
+        "password_hash": "scrypt:32768:8:1$WtxmZrf5sxBXW6qe$9fcb00af0427f2c8c258a2f76abc52ad1266ba0c62ae60b0a3a0fbe0345d31e84bca73765c50fb5dc4f91c9e34d932329652967e34201a59f3452400b4abcbab",
+        "created": "2026-05-31T20:54:42.825696",
+        "last_access": "2026-05-31T21:13:26.791845",
+        "is_admin": true
+    },
+    {
+        "id": 2,
+        "username": "user1",
+        "first_name": "Максим",
+        "last_name": "Волчков",
+        "email": "max@mail.ru",
+        "password_hash": "scrypt:32768:8:1$I3o24vfdWfx4YGF7$0646a4d873f85e6413eb309ee449dd1c0fa1e5bb48078b5db04ef08fd056e1c00089dbb989c41dc1f42601f89f3650adce5a282e8af222c425de338ed6ea4e45",
+        "created": "2026-05-31T21:01:58.994741",
+        "last_access": "2026-05-31T21:12:11.696389",
+        "is_admin": false
+    }
+]
