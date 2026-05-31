@@ -1,6 +1,47 @@
-# .gitignore
-data/
-uploads/
-*.pyc
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Python
 __pycache__/
+*.py[cod]
+*.so
+.Python
+env/
 venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Virtual environment
+lib64/
+include/
+bin/
+share/
+pyvenv.cfg
+
+# Flask / cache
+instance/
+.webassets-cache
+.env
+*.db
+*.sqlite
+
+# Logs and temp files
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Uploads (если не хотите хранить загруженные файлы в Git — раскомментируйте)
+# upload/
+
+# Ignore local configs
+config.local.py
+secrets.py

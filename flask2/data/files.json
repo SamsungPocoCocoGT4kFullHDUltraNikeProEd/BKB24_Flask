@@ -1,0 +1,22 @@
+[
+    {
+        "id": "41321683-1f0f-4321-bcf1-27a049b2dbc9",
+        "original_name": "dc69536751eb02803439c94db469a573.jpg",
+        "uuid_name": "d171ae3b69d44911b942ac764ab7ad55.jpg",
+        "path": "upload/d1/71/d171ae3b69d44911b942ac764ab7ad55.jpg",
+        "extension": "jpg",
+        "md5": "bb92b02b66dd29e674b78f8659640e14",
+        "size": 26817,
+        "upload_date": "2026-05-31T17:36:49.351855"
+    },
+    {
+        "id": "601f5205-d903-4ccb-8eb6-2060a59de5e1",
+        "original_name": "123456789.jpg",
+        "uuid_name": "c40d62cb5f9a40b08f72b2464bb02404.jpg",
+        "path": "upload/c4/0d/c40d62cb5f9a40b08f72b2464bb02404.jpg",
+        "extension": "jpg",
+        "md5": "567aab2bff4c84147464b7e07fcd9aa4",
+        "size": 48876,
+        "upload_date": "2026-05-31T17:54:06.378593"
+    }
+]
