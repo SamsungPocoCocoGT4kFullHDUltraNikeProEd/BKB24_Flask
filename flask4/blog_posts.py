@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from datetime import datetime
 
@@ -32,7 +32,6 @@ def create_post():
         db.session.add(post)
         db.session.flush()
 
-        # Добавляем выбранные теги
         for tag_id in form.tags.data:
             tag = Tag.query.get(tag_id)
             if tag:
@@ -51,7 +50,6 @@ def edit_post(post_id):
     """Редактирование поста"""
     post = Post.query.get_or_404(post_id)
 
-    # Проверка прав
     if not check_post_permission(post):
         flash('У вас нет прав для редактирования этого поста', 'danger')
         return redirect(url_for('index'))
@@ -67,7 +65,6 @@ def edit_post(post_id):
         post.is_private = form.is_private.data
         post.updated_at = datetime.utcnow()
 
-        # Обновляем теги
         post.tags = []
         for tag_id in form.tags.data:
             tag = Tag.query.get(tag_id)
@@ -78,7 +75,6 @@ def edit_post(post_id):
         flash('Пост обновлен!', 'success')
         return redirect(url_for('post_detail', post_id=post.id))
 
-    # Предзаполняем форму текущими тегами
     form.tags.data = [tag.id for tag in post.tags]
     return render_template('edit_post.html', form=form, post=post)
 
@@ -89,7 +85,6 @@ def delete_post(post_id):
     """Удаление поста"""
     post = Post.query.get_or_404(post_id)
 
-    # Проверка прав
     if not check_post_permission(post):
         flash('У вас нет прав для удаления этого поста', 'danger')
         return redirect(url_for('index'))

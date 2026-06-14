@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from models import db, User, Post
-from forms import RegistrationForm, LoginForm
+from models import db, User
+from forms import LoginForm, RegistrationForm
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -56,7 +56,9 @@ def login():
 
             # Перенаправление на запрошенную страницу
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('index'))
+            if next_page:
+                return redirect(next_page)
+            return redirect(url_for('index'))
         else:
             flash('Неверный email или пароль', 'danger')
 
@@ -76,6 +78,6 @@ def logout():
 @login_required
 def profile():
     """Профиль пользователя"""
-    # Исправлено: используем Post.query.filter_by вместо current_user.posts.order_by
+    from models import Post
     user_posts = Post.query.filter_by(author_id=current_user.id).order_by(Post.created_at.desc()).all()
     return render_template('profile.html', user=current_user, posts=user_posts)

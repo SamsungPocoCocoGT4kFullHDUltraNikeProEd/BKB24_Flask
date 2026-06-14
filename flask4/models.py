@@ -23,27 +23,10 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Связь с постами (один пользователь - много постов)
     posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<User {self.username}>'
-
-    def get_post_count(self):
-        """Количество постов пользователя"""
-        return self.posts.count()
-
-    def is_authenticated(self):
-        """Переопределение для Flask-Login"""
-        return True
-
-    def is_active(self):
-        """Переопределение для Flask-Login"""
-        return True
-
-    def is_anonymous(self):
-        """Переопределение для Flask-Login"""
-        return False
 
 
 # Модель категории
@@ -54,15 +37,10 @@ class Category(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Связь с постами (одна категория - много постов)
     posts = db.relationship('Post', backref='category', lazy=True)
 
     def __repr__(self):
         return f'<Category {self.name}>'
-
-    def get_post_count(self):
-        """Количество постов в категории"""
-        return self.posts.count()
 
 
 # Модель тега
@@ -73,15 +51,10 @@ class Tag(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Связь с постами (через вспомогательную таблицу)
     posts = db.relationship('Post', secondary=post_tags, backref='tags', lazy='dynamic')
 
     def __repr__(self):
         return f'<Tag {self.name}>'
-
-    def get_post_count(self):
-        """Количество постов с этим тегом"""
-        return self.posts.count()
 
 
 # Модель поста
@@ -95,37 +68,8 @@ class Post(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Внешние ключи
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
 
     def __repr__(self):
         return f'<Post {self.title}>'
-
-    def get_preview(self, length=300):
-        """Возвращает превью поста (первые N символов)"""
-        if len(self.content) > length:
-            return self.content[:length] + '...'
-        return self.content
-
-    def get_tags_list(self):
-        """Возвращает список тегов поста"""
-        return [tag.name for tag in self.tags]
-
-    def can_edit(self, user):
-        """Проверяет, может ли пользователь редактировать пост"""
-        if not user or not user.is_authenticated:
-            return False
-        return user.id == self.author_id or user.is_admin
-
-    def can_delete(self, user):
-        """Проверяет, может ли пользователь удалить пост"""
-        return self.can_edit(user)
-
-    def is_visible_to(self, user):
-        """Проверяет, виден ли пост пользователю"""
-        if not self.is_private:
-            return True
-        if user and user.is_authenticated:
-            return user.id == self.author_id or user.is_admin
-        return False

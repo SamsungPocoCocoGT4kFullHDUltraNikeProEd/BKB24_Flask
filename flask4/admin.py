@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 from io import BytesIO
 
-from models import db, User, Post, Category, Tag
+from models import db, User, Post, Category, Tag, post_tags
 from forms import ImportForm
 
 admin_bp = Blueprint('admin', __name__)
@@ -22,108 +22,16 @@ def admin_required(func):
     return wrapper
 
 
-# ============ УПРАВЛЕНИЕ КАТЕГОРИЯМИ ============
-
-@admin_bp.route('/categories')
-@login_required
-@admin_required
-def categories():
-    """Страница управления категориями"""
-    all_categories = Category.query.all()
-    return render_template('categories.html', categories=all_categories)
-
-
-@admin_bp.route('/create_category', methods=['POST'])
-@login_required
-@admin_required
-def create_category():
-    """Создание новой категории"""
-    name = request.form.get('name')
-    if name:
-        # Проверка на существующую категорию
-        existing = Category.query.filter_by(name=name).first()
-        if existing:
-            flash(f'Категория "{name}" уже существует', 'warning')
-        else:
-            category = Category(name=name)
-            db.session.add(category)
-            db.session.commit()
-            flash(f'Категория "{name}" создана', 'success')
-    else:
-        flash('Название категории не может быть пустым', 'danger')
-
-    return redirect(url_for('admin.categories'))
-
-
-@admin_bp.route('/delete_category/<int:category_id>')
-@login_required
-@admin_required
-def delete_category(category_id):
-    """Удаление категории"""
-    category = Category.query.get_or_404(category_id)
-
-    # У постов этой категории устанавливаем category_id = None
-    for post in category.posts:
-        post.category_id = None
-
-    db.session.delete(category)
-    db.session.commit()
-    flash('Категория удалена', 'success')
-    return redirect(url_for('admin.categories'))
-
-
-# ============ УПРАВЛЕНИЕ ТЕГАМИ ============
-
-@admin_bp.route('/tags')
-@login_required
-@admin_required
-def tags():
-    """Страница управления тегами"""
-    all_tags = Tag.query.all()
-    return render_template('tags.html', tags=all_tags)
-
-
-@admin_bp.route('/create_tag', methods=['POST'])
-@login_required
-@admin_required
-def create_tag():
-    """Создание нового тега"""
-    name = request.form.get('name')
-    if name:
-        existing = Tag.query.filter_by(name=name).first()
-        if existing:
-            flash(f'Тег "{name}" уже существует', 'warning')
-        else:
-            tag = Tag(name=name)
-            db.session.add(tag)
-            db.session.commit()
-            flash(f'Тег "{name}" создан', 'success')
-    else:
-        flash('Название тега не может быть пустым', 'danger')
-
-    return redirect(url_for('admin.tags'))
-
-
-@admin_bp.route('/delete_tag/<int:tag_id>')
-@login_required
-@admin_required
-def delete_tag(tag_id):
-    """Удаление тега"""
-    tag = Tag.query.get_or_404(tag_id)
-    db.session.delete(tag)
-    db.session.commit()
-    flash('Тег удален', 'success')
-    return redirect(url_for('admin.tags'))
-
-
-# ============ УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ============
+# ============ УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ (только это осталось) ============
 
 @admin_bp.route('/users')
 @login_required
 @admin_required
 def users():
     """Список всех пользователей"""
-    all_users = User.query.all()
+    all_users = User.query.order_by(User.username).all()
+    for user in all_users:
+        user.post_count = Post.query.filter_by(author_id=user.id).count()
     return render_template('admin_users.html', users=all_users)
 
 
@@ -134,7 +42,6 @@ def toggle_admin(user_id):
     """Переключение прав администратора"""
     user = User.query.get_or_404(user_id)
 
-    # Нельзя изменять права самого себя
     if user.id == current_user.id:
         flash('Нельзя изменять свои права администратора', 'warning')
         return redirect(url_for('admin.users'))
@@ -150,20 +57,21 @@ def toggle_admin(user_id):
 @login_required
 @admin_required
 def delete_user(user_id):
-    """Удаление пользователя"""
+    """Удаление пользователя (вместе с его постами)"""
     user = User.query.get_or_404(user_id)
 
     if user.id == current_user.id:
         flash('Нельзя удалить самого себя', 'warning')
         return redirect(url_for('admin.users'))
 
+    username = user.username
     db.session.delete(user)
     db.session.commit()
-    flash(f'Пользователь {user.username} удален', 'success')
+    flash(f'Пользователь {username} удален вместе со всеми постами', 'success')
     return redirect(url_for('admin.users'))
 
 
-# ============ ЭКСПОРТ И ИМПОРТ ============
+# ============ ЭКСПОРТ И ИМПОРТ (оставляем, полезная функция) ============
 
 @admin_bp.route('/export')
 @login_required
@@ -221,7 +129,6 @@ def import_dump():
                 for post_data in posts_data:
                     existing = Post.query.get(post_data.get('id'))
 
-                    # Пропускаем существующие, если не нужно перезаписывать
                     if existing and not form.overwrite.data:
                         skipped_count += 1
                         continue
@@ -244,17 +151,16 @@ def import_dump():
                     if not author and post_data.get('author'):
                         author = User.query.filter_by(username=post_data['author']).first()
                         if not author and form.create_missing.data:
-                            # Создаем временного пользователя
+                            from werkzeug.security import generate_password_hash
                             author = User(
                                 username=post_data['author'],
                                 email=f"{post_data['author']}@imported.com",
-                                password_hash='temporary'
+                                password_hash=generate_password_hash('temporary123')
                             )
                             db.session.add(author)
                             db.session.commit()
 
                     if existing and form.overwrite.data:
-                        # Обновляем существующий пост
                         post = existing
                         post.title = post_data['title']
                         post.content = post_data['content']
@@ -263,7 +169,6 @@ def import_dump():
                         post.updated_at = datetime.utcnow()
                         post.tags = []
                     else:
-                        # Создаем новый пост
                         post = Post(
                             title=post_data['title'],
                             content=post_data['content'],
